@@ -35,16 +35,38 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+ /* Adapted by Elliot Baptist for the Raspberry Pi Pico in 2023. */
+
 #include "scd30_i2c.h"
 #include "sensirion_common.h"
 #include "sensirion_i2c_hal.h"
 #include <stdio.h>  // printf
 
+#include "pico/stdlib.h"
+#include "hardware/i2c.h"
+
 #define sensirion_hal_sleep_us sensirion_i2c_hal_sleep_usec
 
+#define I2C_PORT i2c0
+#define I2C_PIN_SDA PICO_DEFAULT_I2C_SDA_PIN
+#define I2C_PIN_SCL PICO_DEFAULT_I2C_SCL_PIN
+
 int main(void) {
+    // Initialise serial I/O
+    stdio_init_all();
+    sleep_ms(500);
+
+    // Initialise I2C bus
+    i2c_init(I2C_PORT, 1000000); // 1Mhz
+    //Set pins for I2C operation
+    gpio_set_function(I2C_PIN_SDA, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_PIN_SCL, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_PIN_SDA);
+    gpio_pull_up(I2C_PIN_SCL);
+
     int16_t error = NO_ERROR;
-    sensirion_i2c_hal_init();
+    sensirion_i2c_hal_init(I2C_PORT);
     init_driver(SCD30_I2C_ADDR_61);
 
     // make sure the sensor is in a defined state (soft reset does not stop

@@ -53,11 +53,21 @@ void sensirion_i2c_hal_init(i2c_inst_t *i2CInst) {
  * @param address 7-bit I2C address to read from
  * @param data    pointer to the buffer where the data is to be stored
  * @param count   number of bytes to read from I2C and store in the buffer
- * @returns 0 on success, error code otherwise
+ * @returns 0 on success, 1 if address not acknowledged, 2 on timeout
  */
 int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
-    int ret = i2c_read_blocking(_i2CInst, address, data, count, false);
-    return (ret == PICO_ERROR_GENERIC ? 1 : 0);
+    int ret = i2c_read_timeout_us(_i2CInst, address, data, count, false,
+                                  SENSIRION_I2C_TIMEOUT_US);
+    if (ret == count) {
+        return 0;
+    }
+    if (ret == PICO_ERROR_GENERIC) {
+        return 1;
+    }
+    if (ret == PICO_ERROR_TIMEOUT) {
+        return 2;
+    }
+    return 3; // unknown failure
 }
 
 /**
@@ -69,12 +79,22 @@ int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count) {
  * @param address 7-bit I2C address to write to
  * @param data    pointer to the buffer containing the data to write
  * @param count   number of bytes to read from the buffer and send over I2C
- * @returns 0 on success, error code otherwise
+ * @returns 0 on success, 1 if address not acknowledged, 2 on timeout
  */
 int8_t sensirion_i2c_hal_write(uint8_t address, const uint8_t* data,
                                uint16_t count) {
-    int ret = i2c_write_blocking(_i2CInst, address, data, count, false);
-    return (ret == PICO_ERROR_GENERIC ? 1 : 0);
+    int ret = i2c_write_timeout_us(_i2CInst, address, data, count, false,
+                                   SENSIRION_I2C_TIMEOUT_US);
+    if (ret == count) {
+        return 0;
+    }
+    if (ret == PICO_ERROR_GENERIC) {
+        return 1;
+    }
+    if (ret == PICO_ERROR_TIMEOUT) {
+        return 2;
+    }
+    return 3; // unknown failure
 }
 
 /**

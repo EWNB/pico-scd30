@@ -42,6 +42,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define SENSIRION_I2C_TIMEOUT_US 10000
+
 /**
  * Initialize all hard- and software components that are needed for the I2C
  * communication.
@@ -56,7 +58,7 @@ void sensirion_i2c_hal_init(i2c_inst_t *i2CInst);
  * @param address 7-bit I2C address to read from
  * @param data    pointer to the buffer where the data is to be stored
  * @param count   number of bytes to read from I2C and store in the buffer
- * @returns 0 on success, error code otherwise
+ * @returns 0 on success, 1 if address not acknowledged, 2 on timeout
  */
 int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count);
 
@@ -69,7 +71,7 @@ int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint16_t count);
  * @param address 7-bit I2C address to write to
  * @param data    pointer to the buffer containing the data to write
  * @param count   number of bytes to read from the buffer and send over I2C
- * @returns 0 on success, error code otherwise
+ * @returns 0 on success, 1 if address not acknowledged, 2 on timeout
  */
 int8_t sensirion_i2c_hal_write(uint8_t address, const uint8_t* data,
                                uint16_t count);
